@@ -203,6 +203,23 @@ input[type=range]{flex:1;accent-color:var(--c-secondary)}
 .foot{font-size:.8rem;color:var(--c-muted);text-align:center;padding:10px 0 0}
 .foot a{color:var(--c-secondary);font-weight:600;text-decoration:none}
 
+/* logo pill (Brand 1 / Brand 2) */
+.pill{display:inline-flex;background:var(--c-surface);border:1.5px solid var(--c-line);border-radius:999px;padding:4px;gap:4px;width:100%}
+.pill button{flex:1;padding:9px 14px;border-radius:999px;font-weight:700;font-size:.84rem;color:var(--c-muted);transition:all .15s}
+.pill button.on{background:var(--grad);color:#fff;box-shadow:0 5px 14px -5px var(--c-secondary)}
+
+/* call card / poster */
+.card-actions{margin:0 0 14px}
+.poster{background:linear-gradient(160deg,#fbf6ec 0%,#f6ecda 100%);padding:clamp(22px,4vw,42px);border-radius:calc(var(--radius) + 8px);text-align:center;border:1px solid #ece0c8}
+.po-word{font-family:var(--font-display);color:var(--c-primary);font-size:clamp(1.7rem,5vw,3rem);line-height:1.05}
+.po-logo svg{width:clamp(78px,12vw,118px);height:auto;margin:8px auto 0;display:block}
+.po-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:24px 0}
+.po-tile{aspect-ratio:4/3;border-radius:12px;background:var(--grad);display:grid;place-items:center;font-size:2.4rem;box-shadow:var(--shadow-sm)}
+.po-tile:nth-child(even){background:linear-gradient(135deg,var(--c-primary),var(--c-secondary))}
+.po-foot{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;text-align:left}
+.po-tag{font-family:var(--font-display);font-style:italic;color:var(--c-secondary);font-size:clamp(1.3rem,3.4vw,2rem)}
+.po-contact{font-size:.88rem;color:var(--c-ink);line-height:1.7;font-weight:500}
+
 /* toast */
 .toast{
   position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);
@@ -251,7 +268,16 @@ input[type=range]{flex:1;accent-color:var(--c-secondary)}
   <aside class="controls" id="controls">
 
     <div class="cgroup">
-      <div class="lbl"><em>1</em> Colors</div>
+      <div class="lbl"><em>1</em> Logo</div>
+      <p class="hint">Pick your mark — both recolor live with your palette.</p>
+      <div class="pill" id="logoPill">
+        <button data-logo="0">Brand 1</button>
+        <button data-logo="1">Brand 2</button>
+      </div>
+    </div>
+
+    <div class="cgroup">
+      <div class="lbl"><em>2</em> Colors</div>
       <p class="hint">Tap a palette, or mix your own magenta · purple · pink · gold.</p>
       <div class="chips" id="presetChips"></div>
 
@@ -273,13 +299,13 @@ input[type=range]{flex:1;accent-color:var(--c-secondary)}
     </div>
 
     <div class="cgroup">
-      <div class="lbl"><em>2</em> Fonts</div>
+      <div class="lbl"><em>3</em> Fonts</div>
       <p class="hint">Pick a pairing — it styles the wordmark, headings &amp; body live.</p>
       <div class="fonts" id="fontOpts"></div>
     </div>
 
     <div class="cgroup">
-      <div class="lbl"><em>3</em> Style</div>
+      <div class="lbl"><em>4</em> Style</div>
       <p class="hint">Soften the corners from elegant to playful.</p>
       <div class="slider-row">
         <span>Elegant</span>
@@ -301,10 +327,6 @@ input[type=range]{flex:1;accent-color:var(--c-secondary)}
       <span id="heroLogo"></span>
       <div class="wordmark">Fancy Bakes and More</div>
       <div class="tagline">Delight in every bite</div>
-      <div class="cta">
-        <button class="btn btn-primary">Order a Cake</button>
-        <button class="btn btn-ghost">View Menu</button>
-      </div>
     </section>
 
     <!-- PALETTE -->
@@ -340,7 +362,12 @@ input[type=range]{flex:1;accent-color:var(--c-secondary)}
       </div>
     </section>
 
-    <p class="foot">Made for <b>Fancy Bakes and More</b> · <a href="classic.html">View the original brand board →</a></p>
+    <!-- CALL CARD -->
+    <div class="section-tag">Call Card · ready to share</div>
+    <div class="card-actions"><button class="btn btn-ghost" id="dlCard">⬇ Download Call Card</button></div>
+    <section class="poster" id="poster"></section>
+
+    <p class="foot" style="margin-top:26px">Made for <b>Fancy Bakes and More</b> · <a href="classic.html">View the original brand board →</a></p>
   </main>
 </div>
 
@@ -375,7 +402,7 @@ const PRODUCTS = [
 ];
 
 /* ============ STATE ============ */
-let state = { p:'#6A1B9A', s:'#D81B8C', a:'#E0B341', font:0, radius:16 };
+let state = { logo:0, p:'#6A1B9A', s:'#D81B8C', a:'#E0B341', font:0, radius:16 };
 
 /* ============ COLOR HELPERS ============ */
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
@@ -422,6 +449,34 @@ function logoSVG(p,s,a){
 </svg>`;
 }
 
+/* Brand 2 — user's fancy-bakes-primary.svg, recolored live (primary/secondary/accent) */
+function logoSVG2(p,s,a){
+  return `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Fancy Bakes and More logo">
+  <circle cx="100" cy="100" r="78" fill="none" stroke="${a}" stroke-width="2.5"/>
+  <circle cx="100" cy="100" r="70" fill="none" stroke="${s}" stroke-width="3.5" stroke-dasharray="300 140" stroke-dashoffset="-30" stroke-linecap="round"/>
+  <g fill="${p}">
+    <path d="M82 58c0-7 6-12 13-12 3-6 13-6 16 0 8 0 13 6 12 13-1 5-5 8-9 9v6H88v-6c-4-1-7-5-6-10z"/>
+    <rect x="86" y="74" width="28" height="7" rx="2"/>
+  </g>
+  <circle cx="100" cy="92" r="5" fill="${a}"/>
+  <path d="M84 100h32a4 4 0 0 1 4 4v8H80v-8a4 4 0 0 1 4-4z" fill="${p}"/>
+  <path d="M76 116h48a4 4 0 0 1 4 4v9H72v-9a4 4 0 0 1 4-4z" fill="${s}"/>
+  <path d="M68 133h64a4 4 0 0 1 4 4v10H64v-10a4 4 0 0 1 4-4z" fill="${p}"/>
+  <g stroke="${a}" stroke-width="2.4" fill="none" stroke-linecap="round">
+    <path d="M82 105q4.5-4 9 0t9 0 9 0 9 0"/>
+    <path d="M74 121q5-4 10 0t10 0 10 0 10 0 10 0"/>
+  </g>
+  <g fill="${a}">
+    <rect x="62" y="150" width="76" height="9" rx="4.5"/>
+    <rect x="50" y="152" width="14" height="5" rx="2.5"/>
+    <rect x="136" y="152" width="14" height="5" rx="2.5"/>
+  </g>
+</svg>`;
+}
+
+/* whichever brand is selected */
+function currentLogo(p,s,a){ return state.logo===1 ? logoSVG2(p,s,a) : logoSVG(p,s,a); }
+
 /* ============ RENDER ============ */
 const root = document.documentElement;
 function apply(){
@@ -434,9 +489,9 @@ function apply(){
   root.style.setProperty('--font-display',`'${f.disp}', serif`);
   root.style.setProperty('--font-body',`'${f.body}', sans-serif`);
 
-  // logos
-  document.getElementById('heroLogo').innerHTML = logoSVG(p,s,a);
-  document.getElementById('barLogo').innerHTML  = logoSVG(p,s,a);
+  // logos (selected brand)
+  document.getElementById('heroLogo').innerHTML = currentLogo(p,s,a);
+  document.getElementById('barLogo').innerHTML  = currentLogo(p,s,a);
 
   // picker labels
   cPrimary.value=p; cSecondary.value=s; cAccent.value=a;
@@ -454,8 +509,11 @@ function apply(){
   });
   // font active state
   document.querySelectorAll('.fopt').forEach((o,i)=>o.classList.toggle('on',i===font));
+  // logo pill active state
+  document.querySelectorAll('#logoPill button').forEach((b,i)=>b.classList.toggle('on',i===state.logo));
 
   renderPalette();
+  buildPoster();
   save();
 }
 
@@ -503,6 +561,39 @@ function buildMenu(){
       <div class="pbody"><b>${pr.name}</b><p>${pr.desc}</p><span class="price">${pr.price}</span></div>
     </div>`).join('');
 }
+const POSTER_TILES = ['🍰','🎂','🧁','🍫','🍪','🎉'];
+function buildPoster(){
+  document.getElementById('poster').innerHTML = `
+    <div class="po-word">Fancy Bakes and More</div>
+    <div class="po-logo">${currentLogo(state.p,state.s,state.a)}</div>
+    <div class="po-grid">${POSTER_TILES.map(t=>`<div class="po-tile">${t}</div>`).join('')}</div>
+    <div class="po-foot">
+      <div class="po-tag">Delight in every bite</div>
+      <div class="po-contact">Call: 020-5723239<br>Location: Madina Ritz Junction<br>Facebook: Fancy Bakes and More<br>Instagram: fancybakes_andmore</div>
+    </div>`;
+}
+function posterHTML(){
+  const {p,s,a}=state, f=FONTS[state.font];
+  const g1=`linear-gradient(135deg, ${s}, ${p})`, g2=`linear-gradient(135deg, ${p}, ${s})`;
+  const cells=POSTER_TILES.map((t,i)=>`<div style="aspect-ratio:4/3;border-radius:12px;display:grid;place-items:center;font-size:2.4rem;background:${i%2?g2:g1}">${t}</div>`).join('');
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Fancy Bakes & More — Call Card</title>
+<link href="https://fonts.googleapis.com/css2?family=${f.disp.replace(/ /g,'+')}&family=${f.body.replace(/ /g,'+')}&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#e9e2d4;font-family:'${f.body}',sans-serif;display:grid;place-items:center;min-height:100vh;padding:24px}
+.poster{max-width:720px;width:100%;box-sizing:border-box;background:linear-gradient(160deg,#fbf6ec,#f6ecda);border:1px solid #ece0c8;border-radius:24px;padding:42px;text-align:center}
+.w{font-family:'${f.disp}',serif;color:${p};font-size:clamp(2rem,6vw,3rem);line-height:1.05}
+.l svg{width:118px;height:auto;margin:8px auto 0;display:block}
+.g{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:24px 0}
+.f{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;text-align:left}
+.t{font-family:'${f.disp}',serif;font-style:italic;color:${s};font-size:clamp(1.4rem,4vw,2rem)}
+.c{font-size:.9rem;color:#241226;line-height:1.7;font-weight:500}</style></head>
+<body><div class="poster">
+<div class="w">Fancy Bakes and More</div>
+<div class="l">${currentLogo(p,s,a)}</div>
+<div class="g">${cells}</div>
+<div class="f"><div class="t">Delight in every bite</div>
+<div class="c">Call: 020-5723239<br>Location: Madina Ritz Junction<br>Facebook: Fancy Bakes and More<br>Instagram: fancybakes_andmore</div></div>
+</div></body></html>`;
+}
 
 /* ============ DOWNLOADS ============ */
 function download(filename, text, type='text/plain'){
@@ -534,7 +625,7 @@ function kitHTML(){
 <link href="https://fonts.googleapis.com/css2?family=${f.disp.replace(/ /g,'+')}&family=${f.body.replace(/ /g,'+')}&display=swap" rel="stylesheet">
 <style>body{font-family:'${f.body}',sans-serif;max-width:860px;margin:40px auto;padding:0 24px;color:#241226}h1,h2{font-family:'${f.disp}',serif;color:${p}}h1{font-size:2.6rem}code{background:#f4eef6;padding:2px 6px;border-radius:5px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:14px}.logo{width:170px;margin:10px 0}</style></head>
 <body>
-<div class="logo">${logoSVG(p,s,a)}</div>
+<div class="logo">${currentLogo(p,s,a)}</div>
 <h1>Fancy Bakes and More</h1>
 <p style="font-family:'${f.disp}';font-style:italic;color:${s};font-size:1.3rem">Delight in every bite</p>
 <h2>Color Palette</h2>
@@ -587,9 +678,11 @@ document.getElementById('mixBtn').onclick = ()=>{
   apply(); toast('Fresh mix ✨');
 };
 
-document.getElementById('dlSvg').onclick = ()=>download('fancy-bakes-logo.svg', logoSVG(state.p,state.s,state.a), 'image/svg+xml');
+document.querySelectorAll('#logoPill button').forEach(b=>b.onclick=()=>{state.logo=+b.dataset.logo; apply();});
+document.getElementById('dlSvg').onclick = ()=>download(`fancy-bakes-logo-brand${state.logo+1}.svg`, currentLogo(state.p,state.s,state.a), 'image/svg+xml');
 document.getElementById('dlCss').onclick = ()=>download('fancy-bakes-brand.css', cssVars(), 'text/css');
 document.getElementById('dlKit').onclick = ()=>{download('fancy-bakes-brand-kit.html', kitHTML(), 'text/html'); toast('Brand kit downloaded!');};
+document.getElementById('dlCard').onclick = ()=>{download('fancy-bakes-call-card.html', posterHTML(), 'text/html'); toast('Call card downloaded!');};
 
 document.getElementById('toggleControls').onclick = ()=>document.getElementById('controls').classList.toggle('collapsed');
 
