@@ -187,7 +187,9 @@ input[type=range]{flex:1;accent-color:var(--c-secondary)}
 /* menu */
 .menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px;margin-bottom:26px}
 .prod{overflow:hidden}
-.prod .thumb{height:150px;display:grid;place-items:center;font-size:3.4rem;background:var(--grad)}
+.prod .thumb{height:158px;display:grid;place-items:center;background:radial-gradient(circle at 50% 32%, var(--c-tint), var(--c-tint2));border-bottom:1px solid var(--c-line)}
+.prod .thumb svg{width:72%;height:auto;filter:drop-shadow(0 9px 16px rgba(40,15,45,.18))}
+.prod:hover .thumb svg{transform:translateY(-3px) scale(1.03);transition:transform .25s ease}
 .prod .pbody{padding:15px 17px}
 .prod .pbody b{font-family:var(--font-display);font-size:1.18rem;color:var(--c-primary);display:block}
 .prod .pbody p{font-size:.84rem;color:var(--c-muted);margin:3px 0 10px}
@@ -214,8 +216,9 @@ input[type=range]{flex:1;accent-color:var(--c-secondary)}
 .po-word{font-family:var(--font-display);color:var(--c-primary);font-size:clamp(1.7rem,5vw,3rem);line-height:1.05}
 .po-logo svg{width:clamp(78px,12vw,118px);height:auto;margin:8px auto 0;display:block}
 .po-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:24px 0}
-.po-tile{aspect-ratio:4/3;border-radius:12px;background:var(--grad);display:grid;place-items:center;font-size:2.4rem;box-shadow:var(--shadow-sm)}
-.po-tile:nth-child(even){background:linear-gradient(135deg,var(--c-primary),var(--c-secondary))}
+.po-tile{aspect-ratio:4/3;border-radius:12px;background:#fffaf3;display:grid;place-items:center;box-shadow:var(--shadow-sm);border:1px solid #f0e6d4}
+.po-tile:nth-child(even){background:#f7efe0}
+.po-tile svg{width:80%;height:auto}
 .po-foot{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;text-align:left}
 .po-tag{font-family:var(--font-display);font-style:italic;color:var(--c-secondary);font-size:clamp(1.3rem,3.4vw,2rem)}
 .po-contact{font-size:.88rem;color:var(--c-ink);line-height:1.7;font-weight:500}
@@ -364,7 +367,10 @@ input[type=range]{flex:1;accent-color:var(--c-secondary)}
 
     <!-- CALL CARD -->
     <div class="section-tag">Call Card · ready to share</div>
-    <div class="card-actions"><button class="btn btn-ghost" id="dlCard">⬇ Download Call Card</button></div>
+    <div class="card-actions" style="display:flex;gap:9px;flex-wrap:wrap">
+      <button class="btn btn-ghost" id="dlCard">⬇ Download Call Card</button>
+      <a class="btn btn-ghost" href="call-card.html" target="_blank" rel="noopener">↗ Open print-ready card</a>
+    </div>
     <section class="poster" id="poster"></section>
 
     <p class="foot" style="margin-top:26px">Made for <b>Fancy Bakes and More</b> · <a href="classic.html">View the original brand board →</a></p>
@@ -396,9 +402,9 @@ const FONTS = [
 ];
 
 const PRODUCTS = [
-  {emoji:'🍰', name:'Berry Drip Cake',   desc:'Vanilla sponge, fresh berries, dark drip', price:'GH₵ 220'},
-  {emoji:'🎂', name:'Rose Tier Cake',    desc:'Two-tier celebration with sugar roses',     price:'GH₵ 480'},
-  {emoji:'🧁', name:'Cookies & Cream',   desc:'Whipped buttercream & crushed cookies',     price:'GH₵ 180'},
+  {art:0, name:'Berry Drip Cake',   desc:'Vanilla sponge, fresh berries, dark drip', price:'GH₵ 220'},
+  {art:1, name:'Rose Tier Cake',    desc:'Two-tier celebration with sugar roses',     price:'GH₵ 480'},
+  {art:2, name:'Cookies & Cream',   desc:'Whipped buttercream & crushed cookies',     price:'GH₵ 180'},
 ];
 
 /* ============ STATE ============ */
@@ -476,6 +482,82 @@ function logoSVG2(p,s,a){
 
 /* whichever brand is selected */
 function currentLogo(p,s,a){ return state.logo===1 ? logoSVG2(p,s,a) : logoSVG(p,s,a); }
+
+/* ============ CAKE ART ============ */
+/* Real illustrated bakes — recolor live with the palette, never break (no
+   external images), and replace the old emoji placeholders everywhere. */
+function cakeArt(i,p,s,a){
+  const cr='#fffaf3';                       // cream / frosting white
+  const sp=mix(s,'#ffffff',0.22);           // light secondary frosting
+  const pl=mix(p,'#1a0f1e',0.20);           // deep primary shade
+  const drip=(x)=>`<path d="M${x} 50 v7 a3 3 0 0 0 6 0 v-7 z" fill="${sp}"/>`;
+  const open='<svg viewBox="0 0 120 96" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Fancy Bakes cake illustration">';
+  const plate='<ellipse cx="60" cy="87" rx="38" ry="5" fill="rgba(40,15,45,.10)"/>';
+  const arts=[
+    /* 0 — Berry drip layer cake */
+    `${open}${plate}
+      <rect x="30" y="48" width="60" height="35" rx="8" fill="${p}"/>
+      <rect x="30" y="66" width="60" height="3" fill="${pl}" opacity=".5"/>
+      <rect x="30" y="44" width="60" height="10" rx="5" fill="${sp}"/>
+      ${[33,45,57,69,81].map(drip).join('')}
+      <circle cx="50" cy="40" r="5" fill="${s}"/>
+      <circle cx="61" cy="37" r="6" fill="${p}"/>
+      <circle cx="72" cy="40" r="5" fill="${s}"/>
+      <circle cx="61" cy="29" r="3" fill="${a}"/>
+      <rect x="60" y="25" width="2" height="6" rx="1" fill="${pl}"/>
+    </svg>`,
+    /* 1 — Two-tier rose celebration cake */
+    `${open}${plate}
+      <rect x="32" y="58" width="56" height="25" rx="7" fill="${p}"/>
+      <rect x="32" y="58" width="56" height="8" rx="4" fill="${sp}"/>
+      <rect x="44" y="38" width="32" height="22" rx="6" fill="${s}"/>
+      <rect x="44" y="38" width="32" height="7" rx="3" fill="${sp}"/>
+      <circle cx="50" cy="36" r="4" fill="${cr}"/><circle cx="60" cy="34" r="4.5" fill="${cr}"/><circle cx="70" cy="36" r="4" fill="${cr}"/>
+      <circle cx="50" cy="36" r="1.6" fill="${a}"/><circle cx="60" cy="34" r="1.6" fill="${a}"/><circle cx="70" cy="36" r="1.6" fill="${a}"/>
+      <circle cx="40" cy="70" r="2" fill="${cr}"/><circle cx="60" cy="74" r="2" fill="${cr}"/><circle cx="80" cy="70" r="2" fill="${cr}"/>
+    </svg>`,
+    /* 2 — Cupcake with swirl + cherry */
+    `${open}${plate}
+      <path d="M44 60 L76 60 L72 84 Q60 88 48 84 Z" fill="${p}"/>
+      <path d="M50 60 L48 84 M58 60 L57 86 M66 60 L67 86 M74 60 L72 84" stroke="${pl}" stroke-width="1.4" opacity=".5"/>
+      <ellipse cx="60" cy="58" rx="19" ry="8" fill="${sp}"/>
+      <ellipse cx="60" cy="50" rx="14" ry="7" fill="${s}"/>
+      <ellipse cx="60" cy="43" rx="9" ry="6" fill="${sp}"/>
+      <circle cx="60" cy="34" r="4" fill="${a}"/>
+      <circle cx="54" cy="55" r="1.5" fill="${a}"/><circle cx="66" cy="56" r="1.5" fill="${cr}"/><circle cx="60" cy="49" r="1.5" fill="${a}"/>
+    </svg>`,
+    /* 3 — Birthday cake with candle */
+    `${open}${plate}
+      <rect x="30" y="52" width="60" height="31" rx="8" fill="${s}"/>
+      <rect x="30" y="48" width="60" height="10" rx="5" fill="${sp}"/>
+      ${[33,45,57,69,81].map(x=>`<path d="M${x} 54 v6 a3 3 0 0 0 6 0 v-6 z" fill="${sp}"/>`).join('')}
+      <circle cx="44" cy="70" r="2.4" fill="${cr}"/><circle cx="60" cy="74" r="2.4" fill="${cr}"/><circle cx="76" cy="70" r="2.4" fill="${cr}"/>
+      <rect x="58" y="30" width="4" height="18" rx="2" fill="${p}"/>
+      <rect x="58" y="34" width="4" height="3" fill="${cr}"/>
+      <path d="M60 22 q4 4 0 8 q-4 -4 0 -8 z" fill="${a}"/>
+    </svg>`,
+    /* 4 — Stack of cookies */
+    `${open}${plate}
+      <ellipse cx="54" cy="72" rx="17" ry="13" fill="${p}"/>
+      <ellipse cx="68" cy="58" rx="17" ry="13" fill="${s}"/>
+      <ellipse cx="58" cy="44" rx="17" ry="13" fill="${p}"/>
+      <circle cx="52" cy="42" r="2" fill="${a}"/><circle cx="63" cy="46" r="2" fill="${a}"/><circle cx="58" cy="48" r="2" fill="${pl}"/>
+      <circle cx="64" cy="56" r="2" fill="${a}"/><circle cx="72" cy="60" r="2" fill="${cr}"/>
+      <circle cx="50" cy="70" r="2" fill="${a}"/><circle cx="58" cy="74" r="2" fill="${cr}"/>
+    </svg>`,
+    /* 5 — Frosted donut */
+    `${open}${plate}
+      <circle cx="60" cy="58" r="25" fill="${p}"/>
+      <path d="M38 50 a25 25 0 0 1 44 0 a10 10 0 0 1 -8 8 a14 14 0 0 0 -28 0 a10 10 0 0 1 -8 -8 z" fill="${s}"/>
+      <circle cx="60" cy="58" r="9" fill="${cr}"/>
+      <rect x="48" y="44" width="5" height="2" rx="1" fill="${a}" transform="rotate(20 50 45)"/>
+      <rect x="64" y="42" width="5" height="2" rx="1" fill="${cr}" transform="rotate(-25 66 43)"/>
+      <rect x="70" y="52" width="5" height="2" rx="1" fill="${a}" transform="rotate(40 72 53)"/>
+      <rect x="50" y="54" width="5" height="2" rx="1" fill="${cr}" transform="rotate(-10 52 55)"/>
+    </svg>`,
+  ];
+  return arts[((i%arts.length)+arts.length)%arts.length];
+}
 
 /* ============ RENDER ============ */
 const root = document.documentElement;
@@ -555,18 +637,20 @@ function buildFonts(){
   fontOpts.querySelectorAll('.fopt').forEach((o,i)=>o.onclick=()=>{state.font=i; apply();});
 }
 function buildMenu(){
+  const {p,s,a}=state;
   menu.innerHTML = PRODUCTS.map(pr=>`
     <div class="card prod">
-      <div class="thumb">${pr.emoji}</div>
+      <div class="thumb">${cakeArt(pr.art,p,s,a)}</div>
       <div class="pbody"><b>${pr.name}</b><p>${pr.desc}</p><span class="price">${pr.price}</span></div>
     </div>`).join('');
 }
-const POSTER_TILES = ['🍰','🎂','🧁','🍫','🍪','🎉'];
+const POSTER_TILES = [0,1,2,3,4,5];
 function buildPoster(){
+  const {p,s,a}=state;
   document.getElementById('poster').innerHTML = `
     <div class="po-word">Fancy Bakes and More</div>
-    <div class="po-logo">${currentLogo(state.p,state.s,state.a)}</div>
-    <div class="po-grid">${POSTER_TILES.map(t=>`<div class="po-tile">${t}</div>`).join('')}</div>
+    <div class="po-logo">${currentLogo(p,s,a)}</div>
+    <div class="po-grid">${POSTER_TILES.map(t=>`<div class="po-tile">${cakeArt(t,p,s,a)}</div>`).join('')}</div>
     <div class="po-foot">
       <div class="po-tag">Delight in every bite</div>
       <div class="po-contact">Call: 020-5723239<br>Location: Madina Ritz Junction<br>Facebook: Fancy Bakes and More<br>Instagram: fancybakes_andmore</div>
@@ -574,8 +658,7 @@ function buildPoster(){
 }
 function posterHTML(){
   const {p,s,a}=state, f=FONTS[state.font];
-  const g1=`linear-gradient(135deg, ${s}, ${p})`, g2=`linear-gradient(135deg, ${p}, ${s})`;
-  const cells=POSTER_TILES.map((t,i)=>`<div style="aspect-ratio:4/3;border-radius:12px;display:grid;place-items:center;font-size:2.4rem;background:${i%2?g2:g1}">${t}</div>`).join('');
+  const cells=POSTER_TILES.map((t,i)=>`<div style="aspect-ratio:4/3;border-radius:12px;display:grid;place-items:center;background:${i%2?'#f7efe0':'#fffaf3'};border:1px solid #f0e6d4;box-shadow:0 2px 10px rgba(40,15,45,.06)"><span style="display:block;width:80%">${cakeArt(t,p,s,a)}</span></div>`).join('');
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Fancy Bakes & More — Call Card</title>
 <link href="https://fonts.googleapis.com/css2?family=${f.disp.replace(/ /g,'+')}&family=${f.body.replace(/ /g,'+')}&display=swap" rel="stylesheet">
 <style>body{margin:0;background:#e9e2d4;font-family:'${f.body}',sans-serif;display:grid;place-items:center;min-height:100vh;padding:24px}
@@ -583,6 +666,7 @@ function posterHTML(){
 .w{font-family:'${f.disp}',serif;color:${p};font-size:clamp(2rem,6vw,3rem);line-height:1.05}
 .l svg{width:118px;height:auto;margin:8px auto 0;display:block}
 .g{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:24px 0}
+.g svg{width:80%;height:auto;display:block}
 .f{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;text-align:left}
 .t{font-family:'${f.disp}',serif;font-style:italic;color:${s};font-size:clamp(1.4rem,4vw,2rem)}
 .c{font-size:.9rem;color:#241226;line-height:1.7;font-weight:500}</style></head>
